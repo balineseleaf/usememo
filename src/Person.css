@@ -1,0 +1,42 @@
+.person-info {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid black;
+	margin: 10px;
+	padding: 10px;
+	width: 278px;
+	text-align: center;
+	height: 250px;
+	gap: 10px;
+	border-radius: 10px;
+}
+.text {
+	padding: 0;
+	margin: 0;
+	font-size: 20px;
+}
+
+.bold-text {
+	font-size: 21px;
+	font-weight: 700;
+}
+
+.like {
+	background-image: url(./images/like.svg);
+	width: 30px;
+	padding: 0;
+	margin: 0;
+	height: 30px;
+	border: none;
+	outline: none;
+	background-color: transparent;
+}
+.like:hover {
+	cursor: pointer;
+}
+
+.like-active {
+	background-image: url(./images/like-active.svg);
+}

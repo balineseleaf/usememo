@@ -1,26 +1,79 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
 import './App.css';
+import axios from 'axios';
+import PersonList from './PersonList';
+import PersonModel from './models/Person';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function App(): JSX.Element {
+	const [people, setPeople] = useState<PersonModel[]>([]);
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [fetching, setFetching] = useState<boolean>(true);
+
+	useEffect(() => {
+		if (fetching) {
+			// console.log('fetching');
+			axios
+				.get(`https://swapi.dev/api/people/?page=${currentPage}`)
+				.then((res) => {
+					if (res.status === 200) {
+						const newPeople: PersonModel[] = res.data.results.map(
+							(person: any) => ({
+								...person,
+								liked: false,
+							})
+						);
+						newPeople.forEach((person) => {
+							person.liked = Boolean(localStorage.getItem(person.name));
+						});
+						setPeople((prevPeople) => [...prevPeople, ...newPeople]);
+						setCurrentPage((prev) => prev + 1);
+						// setTotalCount(+res.headers['x-total-count']);
+					}
+				})
+				.catch((error) => console.log(error))
+				.finally(() => setFetching(false));
+		}
+	}, [fetching]);
+
+	const handleLikeToggle = (person: PersonModel) => {
+		const isLiked = !person.liked;
+		setPeople((prevPeople) =>
+			prevPeople.map((character) =>
+				character.url === person.url
+					? { ...character, liked: isLiked }
+					: character
+			)
+		);
+		if (isLiked) {
+			localStorage.setItem(person.name, String(isLiked));
+		} else {
+			localStorage.removeItem(person.name);
+		}
+	};
+
+	const scrollHandler = (e: Event) => {
+		const { scrollTop, scrollHeight, clientHeight } = (e.target as Document)
+			.documentElement;
+		if (scrollHeight - (scrollTop + clientHeight) < 100) {
+			setFetching(true);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener('scroll', scrollHandler);
+		return function () {
+			document.removeEventListener('scroll', scrollHandler);
+		};
+	}, []);
+
+	return (
+		<div className='gallery'>
+			<PersonList
+				people={people}
+				onLikeToggle={handleLikeToggle}
+			/>
+		</div>
+	);
 }
 
 export default App;
