@@ -1,3 +1,6 @@
+
+// SO, basically we have two types: one is comming from API, another one we are using in out app.
+// I see no way to combine both in one type
 export default interface Person {
 	name: string;
 	height: string;
