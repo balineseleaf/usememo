@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import './App.css';
 // it's not obvious to use axios, why not just simple fetch?
 import axios from 'axios';
@@ -7,6 +7,7 @@ import PersonModel from './models/Person';
 
 function App(): JSX.Element { // types in this line are redundant
 	// try to use only 2 state variables: people and currentPage. fetching and allFetched are redundant
+	// P.S. fetching can be used for some "pending" animation, but useEffect should not depend on fetching
 	const [people, setPeople] = useState<PersonModel[]>([]);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [fetching, setFetching] = useState<boolean>(true);
@@ -17,9 +18,7 @@ function App(): JSX.Element { // types in this line are redundant
 	const [toggle, setToggle] = useState(false)
 
 	useEffect(() => {
-		console.warn("I am useEffect", new Date().getMilliseconds())
 		if (fetching && !allFetched) {
-			console.warn('fetching');
 			axios
 				// here we can use generic types
 				.get(`https://swapi.dev/api/people/?page=${currentPage}`)
@@ -50,6 +49,7 @@ function App(): JSX.Element { // types in this line are redundant
 
 	const handleLikeToggle = (person: PersonModel) => {
 		const isLiked = !person.liked;
+		// console.warn("I am handleLikeToggle")
 		// comparing two peoples you rely on url, but as key in local storage you are using name
 		// this can lead to hard2debug issues in the future.
 		setPeople((prevCharacter) =>

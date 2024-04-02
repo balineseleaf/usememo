@@ -15,7 +15,7 @@ interface PersonProps {
 // should we use this not to rerender every person, when only one is liked?
 // https://react.dev/reference/react/memo
 
-const Person: React.FC<PersonProps> = React.memo(({ person, onLikeToggle }) => {
+const Person: React.FC<PersonProps> = ({ person, onLikeToggle }) => {
 	// const calculateAge = (birthYear: string): string | number => {
 	// 	if (birthYear === 'unknown') return 'Unknown';
 	// 	const currentYear = new Date().getFullYear();
@@ -65,6 +65,6 @@ const Person: React.FC<PersonProps> = React.memo(({ person, onLikeToggle }) => {
 				onClick={onLikeToggle}></button>
 		</div>
 	);
-}, (oldProps, newProps)=>oldProps.person.liked !== newProps.person.liked);
+}
 
 export default Person;
