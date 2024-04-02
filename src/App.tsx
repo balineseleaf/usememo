@@ -40,8 +40,8 @@ function App(): JSX.Element {
 
 	const handleLikeToggle = (person: PersonModel) => {
 		const isLiked = !person.liked;
-		setPeople((prevPeople) =>
-			prevPeople.map((character) =>
+		setPeople((prevCharacter) =>
+			prevCharacter.map((character) =>
 				character.url === person.url
 					? { ...character, liked: isLiked }
 					: character
