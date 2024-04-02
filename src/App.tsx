@@ -8,10 +8,11 @@ function App(): JSX.Element {
 	const [people, setPeople] = useState<PersonModel[]>([]);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [fetching, setFetching] = useState<boolean>(true);
+	const [allFetched, setAllFetched] = useState<boolean>(false);
 
 	useEffect(() => {
-		if (fetching) {
-			// console.log('fetching');
+		if (fetching && !allFetched) {
+			console.log('fetching');
 			axios
 				.get(`https://swapi.dev/api/people/?page=${currentPage}`)
 				.then((res) => {
@@ -27,13 +28,15 @@ function App(): JSX.Element {
 						});
 						setPeople((prevPeople) => [...prevPeople, ...newPeople]);
 						setCurrentPage((prev) => prev + 1);
-						// setTotalCount(+res.headers['x-total-count']);
+						if (people.length >= 82) {
+							setAllFetched(true);
+						}
 					}
 				})
 				.catch((error) => console.log(error))
 				.finally(() => setFetching(false));
 		}
-	}, [fetching]);
+	}, [fetching, allFetched]);
 
 	const handleLikeToggle = (person: PersonModel) => {
 		const isLiked = !person.liked;
