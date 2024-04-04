@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import './Person.css';
 
 interface PersonProps {
@@ -28,20 +28,21 @@ const Person: React.FC<PersonProps> = ({ person, onLikeToggle }) => {
 	// 	}
 	// 	return bbYear;
 	// };
-
+	//console.log('I am person', person.name);
 	const calculateAge = useMemo(() => {
+		// console.log('I am person: calculateAge', person.name);
+		// for (let i = 0; i < 1_000_000; i++) {}
 		const birthYear = person.birth_year;
 		if (birthYear === 'unknown') return 'Unknown';
 		const currentYear = new Date().getFullYear();
 		let bbYear: number;
 
-		if (birthYear.endsWith('BBY')) {
-			bbYear = currentYear + parseInt(birthYear, 10);
-		} else {
-			bbYear = parseInt(birthYear, 10);
-		}
+		birthYear.endsWith('BBY')
+			? (bbYear = currentYear + parseInt(birthYear, 10))
+			: (bbYear = parseInt(birthYear, 10));
+
 		return bbYear;
-	}, [person.birth_year]);
+	}, []);
 
 	return (
 		<div className='person-info'>
@@ -49,6 +50,7 @@ const Person: React.FC<PersonProps> = ({ person, onLikeToggle }) => {
 			<p className='text'>Height: {person.height}</p>
 			<p className='text'>Mass: {person.mass}</p>
 			<p className='text'>Birth Year: {calculateAge}</p>
+			Liked: {String(person.liked)}
 			{/* <p className='text'>Birth Year: {calculateAge(person.birth_year)}</p> */}
 			<button
 				type='button'

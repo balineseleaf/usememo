@@ -1,42 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import axios from 'axios';
 import PersonList from './PersonList';
 import PersonModel from './models/Person';
 
 function App(): JSX.Element {
 	const [people, setPeople] = useState<PersonModel[]>([]);
 	const [currentPage, setCurrentPage] = useState<number>(1);
-	const [fetching, setFetching] = useState<boolean>(true);
-	const [allFetched, setAllFetched] = useState<boolean>(false);
+	const [isFetching, setIsFetching] = useState<boolean>(true);
 
 	useEffect(() => {
-		if (fetching && !allFetched) {
+		if (isFetching) {
 			console.log('fetching');
-			axios
-				.get(`https://swapi.dev/api/people/?page=${currentPage}`)
-				.then((res) => {
-					if (res.status === 200) {
-						const newPeople: PersonModel[] = res.data.results.map(
-							(person: any) => ({
-								...person,
-								liked: false,
-							})
-						);
-						newPeople.forEach((person) => {
-							person.liked = Boolean(localStorage.getItem(person.name));
-						});
-						setPeople((prevPeople) => [...prevPeople, ...newPeople]);
-						setCurrentPage((prev) => prev + 1);
-						if (people.length >= 82) {
-							setAllFetched(true);
-						}
+			const fetchData = async () => {
+				try {
+					const response = await fetch(
+						`https://swapi.dev/api/people/?page=${currentPage}`
+					);
+					if (!response.ok) {
+						throw new Error('Failed to fetch data');
 					}
-				})
-				.catch((error) => console.log(error))
-				.finally(() => setFetching(false));
+					const data = await response.json();
+					const newPeople: PersonModel[] = data.results.map((person: any) => ({
+						...person,
+						liked: false,
+					}));
+					newPeople.forEach((person) => {
+						person.liked = Boolean(localStorage.getItem(person.name));
+					});
+					setPeople((prevPeople) => [...prevPeople, ...newPeople]);
+					setCurrentPage((prev) => prev + 1);
+					if (newPeople.length >= 82) {
+						setIsFetching(false);
+					}
+				} catch (e) {
+					return console.log(e);
+				} finally {
+					setIsFetching(false);
+				}
+			};
+			fetchData();
 		}
-	}, [fetching, allFetched]);
+	}, [isFetching]);
 
 	const handleLikeToggle = (person: PersonModel) => {
 		const isLiked = !person.liked;
@@ -58,12 +62,13 @@ function App(): JSX.Element {
 		const { scrollTop, scrollHeight, clientHeight } = (e.target as Document)
 			.documentElement;
 		if (scrollHeight - (scrollTop + clientHeight) < 100) {
-			setFetching(true);
+			setIsFetching(true);
 		}
 	};
 
 	useEffect(() => {
 		document.addEventListener('scroll', scrollHandler);
+		console.log('scroll');
 		return function () {
 			document.removeEventListener('scroll', scrollHandler);
 		};

@@ -3,7 +3,7 @@ export default interface Person {
 	height: string;
 	mass: string;
 	birth_year: string;
-	age: string | number;
+	age: number;
 	liked: boolean;
 	url: string;
 }
