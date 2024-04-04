@@ -1,48 +1,44 @@
 import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import PersonList from './PersonList';
-import PersonModel from './models/Person';
+import {PersonModel, ResponseDto} from './models/Person';
+
+const BASE_URL = 'https://swapi.dev/api/people/'
+const fetchPersons = async (page: number): Promise<ResponseDto> => {
+	return fetch(`${BASE_URL}?page=${page}`).then(response => response.json())
+}
 
 function App(): JSX.Element {
 	const [people, setPeople] = useState<PersonModel[]>([]);
 	const [currentPage, setCurrentPage] = useState<number>(1);
-	const [isFetching, setIsFetching] = useState<boolean>(true);
+	const [isFetching, setIsFetching] = useState<boolean>(false);
+	const [maxCount, setMaxCount] = useState(Infinity)
+	const [error, setError] = useState('')
+
+	const fetchNextPersons = async () =>{
+		const response = await fetchPersons(currentPage)
+		if (!!response.count) {
+			setMaxCount(response.count)
+		}
+		if (!!response.results && response.results.length > 0){
+			const newPeople: PersonModel[] = response.results.map((person: any) => ({
+				...person,
+				liked: false,
+			}))
+			setPeople((prevState) => [...prevState, ...newPeople])
+		}
+	}
 
 	useEffect(() => {
-		if (isFetching) {
-			console.log('fetching');
-			const fetchData = async () => {
-				try {
-					const response = await fetch(
-						`https://swapi.dev/api/people/?page=${currentPage}`
-					);
-					if (!response.ok) {
-						throw new Error('Failed to fetch data');
-					}
-					const data = await response.json();
-					const newPeople: PersonModel[] = data.results.map((person: any) => ({
-						...person,
-						liked: false,
-					}));
-					newPeople.forEach((person) => {
-						person.liked = Boolean(localStorage.getItem(person.name));
-					});
-					setPeople((prevPeople) => [...prevPeople, ...newPeople]);
-					setCurrentPage((prev) => prev + 1);
-					if (newPeople.length >= 82) {
-						setIsFetching(false);
-					}
-				} catch (e) {
-					return console.log(e);
-				} finally {
-					setIsFetching(false);
-				}
-			};
-			fetchData();
+		if (people.length < maxCount){
+			setIsFetching(true)
+			fetchNextPersons()
+				.catch(e=>{ setError(e) })
+				.finally(()=>{ setIsFetching(false)})
 		}
-	}, [isFetching]);
+	}, [currentPage]);
 
-	const handleLikeToggle = (person: PersonModel) => {
+	const handleLikeToggle = useCallback((person: PersonModel) => {
 		const isLiked = !person.liked;
 		setPeople((prevCharacter) =>
 			prevCharacter.map((character) =>
@@ -56,23 +52,28 @@ function App(): JSX.Element {
 		} else {
 			localStorage.removeItem(person.name);
 		}
-	};
+	}, []);
 
 	const scrollHandler = (e: Event) => {
+		console.warn("scrollHandler")
+		if (isFetching) return
 		const { scrollTop, scrollHeight, clientHeight } = (e.target as Document)
 			.documentElement;
 		if (scrollHeight - (scrollTop + clientHeight) < 100) {
-			setIsFetching(true);
+			setCurrentPage(x=> x + 1);
 		}
 	};
 
 	useEffect(() => {
 		document.addEventListener('scroll', scrollHandler);
-		console.log('scroll');
 		return function () {
 			document.removeEventListener('scroll', scrollHandler);
 		};
 	}, []);
+
+	if (error.length>0){
+		return <p>{error}</p>
+	}
 
 	return (
 		<div className='gallery'>

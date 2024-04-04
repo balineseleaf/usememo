@@ -13,35 +13,16 @@ interface PersonProps {
 }
 
 const Person: React.FC<PersonProps> = ({ person, onLikeToggle }) => {
-	// const calculateAge = (birthYear: string): string | number => {
-	// 	if (birthYear === 'unknown') return 'Unknown';
-	// 	const currentYear = new Date().getFullYear();
-	// 	let bbYear: number;
-
-	// 	for (let i = 1; i < 100000000; i++) {
-	// 		bbYear = 2 + i;
-	// 	}
-	// 	if (birthYear.endsWith('BBY')) {
-	// 		bbYear = currentYear + parseInt(birthYear, 10);
-	// 	} else {
-	// 		bbYear = parseInt(birthYear, 10);
-	// 	}
-	// 	return bbYear;
-	// };
-	//console.log('I am person', person.name);
 	const calculateAge = useMemo(() => {
 		// console.log('I am person: calculateAge', person.name);
-		// for (let i = 0; i < 1_000_000; i++) {}
+		for (let i = 0; i < 100_000_000; i++) {}
 		const birthYear = person.birth_year;
 		if (birthYear === 'unknown') return 'Unknown';
 		const currentYear = new Date().getFullYear();
-		let bbYear: number;
 
-		birthYear.endsWith('BBY')
-			? (bbYear = currentYear + parseInt(birthYear, 10))
-			: (bbYear = parseInt(birthYear, 10));
-
-		return bbYear;
+		return  birthYear.endsWith('BBY')
+			? currentYear + parseInt(birthYear, 10)
+			: parseInt(birthYear, 10);
 	}, []);
 
 	return (
