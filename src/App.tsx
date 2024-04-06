@@ -1,88 +1,80 @@
-import { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import PersonList from './PersonList';
-import {PersonModel, ResponseDto} from './models/Person';
+import {MutableRefObject, useEffect, useRef, useState} from "react";
+import RichEditor from "./RichEditor";
 
-const BASE_URL = 'https://swapi.dev/api/people/'
-const fetchPersons = async (page: number): Promise<ResponseDto> => {
-	return fetch(`${BASE_URL}?page=${page}`).then(response => response.json())
-}
+function App(){
+	const [toggle, setToggle] = useState(false)
 
-function App(): JSX.Element {
-	const [people, setPeople] = useState<PersonModel[]>([]);
-	const [currentPage, setCurrentPage] = useState<number>(1);
-	const [isFetching, setIsFetching] = useState<boolean>(false);
-	const [maxCount, setMaxCount] = useState(Infinity)
-	const [error, setError] = useState('')
+	const firstName = useRef('')
+	const lastName = useRef('')
 
-	const fetchNextPersons = async () =>{
-		const response = await fetchPersons(currentPage)
-		if (!!response.count) {
-			setMaxCount(response.count)
-		}
-		if (!!response.results && response.results.length > 0){
-			const newPeople: PersonModel[] = response.results.map((person: any) => ({
-				...person,
-				liked: false,
-			}))
-			setPeople((prevState) => [...prevState, ...newPeople])
-		}
+	const [activeIdx, setActiveIdx] = useState(0)
+	const firstNameInput = useRef({focusMe: ()=> {throw new Error("Not implemented")}})
+	const lastNameInput = useRef({focusMe: ()=> {throw new Error("Not implemented")}})
+
+	const changeHandler = (ref: MutableRefObject<string>, value:string)=>{
+		ref.current = value
 	}
 
-	useEffect(() => {
-		if (people.length < maxCount){
-			setIsFetching(true)
-			fetchNextPersons()
-				.catch(e=>{ setError(e) })
-				.finally(()=>{ setIsFetching(false)})
-		}
-	}, [currentPage]);
-
-	const handleLikeToggle = useCallback((person: PersonModel) => {
-		const isLiked = !person.liked;
-		setPeople((prevCharacter) =>
-			prevCharacter.map((character) =>
-				character.url === person.url
-					? { ...character, liked: isLiked }
-					: character
-			)
-		);
-		if (isLiked) {
-			localStorage.setItem(person.name, String(isLiked));
+	const keyHandler = (event: KeyboardEvent)=> {
+		if (event.key!=='Tab') return;
+		event.preventDefault()
+		if (event.shiftKey) {
+			setActiveIdx(0)
 		} else {
-			localStorage.removeItem(person.name);
+			setActiveIdx(1)
 		}
-	}, []);
-
-	const scrollHandler = (e: Event) => {
-		console.warn("scrollHandler")
-		if (isFetching) return
-		const { scrollTop, scrollHeight, clientHeight } = (e.target as Document)
-			.documentElement;
-		if (scrollHeight - (scrollTop + clientHeight) < 100) {
-			setCurrentPage(x=> x + 1);
+	}
+	useEffect(() => {
+		switch (activeIdx) {
+			case 0 :
+				firstNameInput.current.focusMe()
+				break
+			case 1:
+				lastNameInput.current.focusMe()
+				break
+			default:
+				throw new Error("Unexpected state")
 		}
-	};
+	}, [activeIdx]);
 
 	useEffect(() => {
-		document.addEventListener('scroll', scrollHandler);
-		return function () {
-			document.removeEventListener('scroll', scrollHandler);
-		};
+		document.addEventListener("keydown", keyHandler)
+		return () => document.removeEventListener("keydown", keyHandler)
 	}, []);
-
-	if (error.length>0){
-		return <p>{error}</p>
-	}
 
 	return (
-		<div className='gallery'>
-			<PersonList
-				people={people}
-				onLikeToggle={handleLikeToggle}
-			/>
-		</div>
-	);
+		<div style={{display:'flex', flexDirection: "column", padding: "100px 200px", height: '100px', justifyContent: 'space-between'}}>
+			<div>
+				ActiveIdx: {activeIdx}
+				Toggle: {String(toggle)}
+				<button onClick={() => {
+					setToggle((x) => !x)
+					firstNameInput.current.focusMe()
+				}}>Toggle1
+				</button>
+				<button onClick={() => {
+					setToggle((x) => !x)
+					lastNameInput.current.focusMe()
+				}}>Toggle2
+				</button>
+			</div>
+			<RichEditor
+				value={firstName.current}
+				onChange={(value: string) => changeHandler(firstName, value)}
+				ref={firstNameInput}
+				boss={()=> setActiveIdx(0)} />
+			<RichEditor
+				value={lastName.current}
+				onChange={(value:string) => changeHandler(lastName, value)}
+				ref={lastNameInput}
+				boss={()=> setActiveIdx(1)}/>
+			<button onClick={()=>{
+				console.warn("firstName", firstName.current)
+				console.warn("lastName", lastName.current)
+			}}>Save</button>
+		</div>)
+
 }
 
 export default App;

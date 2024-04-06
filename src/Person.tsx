@@ -23,7 +23,7 @@ const Person: React.FC<PersonProps> = ({ person, onLikeToggle }) => {
 		return  birthYear.endsWith('BBY')
 			? currentYear + parseInt(birthYear, 10)
 			: parseInt(birthYear, 10);
-	}, []);
+	}, [person.birth_year]);
 
 	return (
 		<div className='person-info'>
