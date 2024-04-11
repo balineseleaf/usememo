@@ -4,3 +4,7 @@
 	display: flex;
 	flex-wrap: wrap;
 }
+.todos {
+	display: flex;
+	flex-direction: column;
+}
