@@ -9,8 +9,8 @@ function App(){
 	const lastName = useRef('')
 
 	const [activeIdx, setActiveIdx] = useState(0)
-	const firstNameInput = useRef({focusMe: ()=> {throw new Error("Not implemented")}})
-	const lastNameInput = useRef({focusMe: ()=> {throw new Error("Not implemented")}})
+	const firstNameInput = useRef({focusMe: ()=> { throw new Error("Not implemented") }})
+	const lastNameInput = useRef({focusMe: ()=> { throw new Error("Not implemented") }})
 
 	const changeHandler = (ref: MutableRefObject<string>, value:string)=>{
 		ref.current = value
@@ -63,12 +63,12 @@ function App(){
 				value={firstName.current}
 				onChange={(value: string) => changeHandler(firstName, value)}
 				ref={firstNameInput}
-				boss={()=> setActiveIdx(0)} />
+				meWasFocusedByUser={()=> setActiveIdx(0)} />
 			<RichEditor
 				value={lastName.current}
 				onChange={(value:string) => changeHandler(lastName, value)}
 				ref={lastNameInput}
-				boss={()=> setActiveIdx(1)}/>
+				meWasFocusedByUser={()=> setActiveIdx(1)}/>
 			<button onClick={()=>{
 				console.warn("firstName", firstName.current)
 				console.warn("lastName", lastName.current)
